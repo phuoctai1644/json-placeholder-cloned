@@ -30,5 +30,24 @@ def comment_lists(request: HttpRequest):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def comment_detail(request: HttpRequest):
-  return False
+def comment_detail(request: HttpRequest, id):
+  try:
+    comment = Comment.objects.get(id=id)
+    if request.method == 'GET':
+      comment_serializer = CommentSerializer(comment)
+      return JsonResponse(comment_serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+      comment_data = JSONParser().parse(request)
+      comment_serializer = CommentSerializer(comment, data=comment_data)
+      if comment_serializer.is_valid():
+        comment_serializer.save()
+        return JsonResponse(comment_serializer.data, status=status.HTTP_200_OK)
+      return JsonResponse(comment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+      comment.delete()
+      return JsonResponse({'message': 'Comment was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+
+  except:
+    return JsonResponse({'message': 'Comment does not exist!'}, status=status.HTTP_404_NOT_FOUND)
