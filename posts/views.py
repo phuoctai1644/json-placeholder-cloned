@@ -34,7 +34,6 @@ def post_list(request: HttpRequest):
 def post_detail(request: HttpRequest, id):
   try:
     post = Post.objects.get(id=id)
-    print(post)
     if request.method == 'GET':
       post_serializer = PostSerializer(post)
       return JsonResponse(post_serializer.data, status=status.HTTP_200_OK)

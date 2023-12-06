@@ -26,4 +26,24 @@ def user_lists(request: HttpRequest):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def user_detail(request: HttpRequest, id):
-  return False
+  try:
+    user = User.objects.get(id=id)
+    if request.method == 'GET':
+      user_serializer = UserSerializer(user)
+      return JsonResponse(user_serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+      user_data = JSONParser().parse(request)
+      user_serializer = UserSerializer(user, data=user_data)
+      if user_serializer.is_valid():
+        user_serializer.save()
+        return JsonResponse(user_serializer.data, status=status.HTTP_200_OK)
+    
+    elif request.method == 'DELETE':
+      user.delete()
+      return JsonResponse(
+        {'message': 'User was deleted successfully!'},
+        status=status.HTTP_204_NO_CONTENT
+      )
+  except:
+    return JsonResponse({'message': 'The user does not exit'}, status=status.HTTP_404_NOT_FOUND)

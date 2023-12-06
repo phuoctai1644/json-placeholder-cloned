@@ -19,6 +19,15 @@ class AddressSerializer(serializers.ModelSerializer):
     # Dùng objects thay cho serializer đầy đủ
     geo_instance = Geo.objects.create(**geo_data)
     return Address.objects.create(geo=geo_instance, **validated_data)
+  
+  def update(self, instance, validated_data):
+    geo_serializer = self.fields['geo']
+    geo_instance = instance.geo
+
+    geo_data = validated_data.pop('geo')
+    geo_serializer.update(geo_instance, geo_data)
+    return super(AddressSerializer, self).update(instance, validated_data)
+
 
 class CompanySerializer(serializers.ModelSerializer):
   class Meta:
@@ -41,3 +50,21 @@ class UserSerializer(serializers.ModelSerializer):
     company_instance = Company.objects.create(**company_data)
 
     return User.objects.create(address=address_instance, company=company_instance, **validated_data)
+  
+  def update(self, instance, validated_data):
+    # Update for address serializer
+    address_serializer = self.fields['address']
+    address_instance = instance.address 
+
+    address_data = validated_data.pop('address')
+    address_serializer.update(address_instance, address_data)
+
+    # Update for company serializer
+    company_serializer = self.fields['company']
+    company_instance = instance.company
+
+    company_data = validated_data.pop('company')
+    company_serializer.update(company_instance, company_data)
+    
+    return super(UserSerializer, self).update(instance, validated_data)
+  
